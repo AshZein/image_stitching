@@ -58,3 +58,37 @@ def compute_orientation(image, keypoint, patch_size=31):
     dominant = bin_edges[np.argmax(hist)]
     
     return dominant
+
+
+# BRIEF descriptor
+def generate_brief_pattern(patch_size, num_pairs):
+    np.random.seed(0)  # For reproducibility
+    pattern = np.random.randint(0, patch_size, (num_pairs, 4))
+    return pattern
+
+def compute_brief_descriptor(image, keypoint, pattern, patch_size):
+    x, y = keypoint.pt
+    x, y = int(x), int(y)
+    
+    # Extract the patch around the keypoint
+    patch = image[y - patch_size // 2:y + patch_size // 2 + 1, x - patch_size // 2:x + patch_size // 2 + 1]
+    
+    descriptor = []
+    for p in pattern:
+        x1, y1, x2, y2 = p
+        if patch[y1, x1] < patch[y2, x2]:
+            descriptor.append(1)
+        else:
+            descriptor.append(0)
+    
+    return np.array(descriptor, dtype=np.uint8)
+
+def brief_keypoint_descriptors(image, keypoints, patch_size=31, num_pairs=256):
+    pattern = generate_brief_pattern(patch_size, num_pairs)
+    descriptors = []
+    
+    for keypoint in keypoints:
+        descriptor = compute_brief_descriptor(image, keypoint, pattern, patch_size)
+        descriptors.append(descriptor)
+    
+    return np.array(descriptors)
