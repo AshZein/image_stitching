@@ -27,20 +27,21 @@ def is_keypoint(image, x, y, threshold=100):
             
     return brighter_count >= 12 or darker_count >= 12  
 
+
 def fast_algorithm(image, threshold=100):
     keypoints = []
     
     for y in range(3, image.shape[0] - 3):
         for x in range(3, image.shape[1] - 3):
             if is_keypoint(image, x, y, threshold):
-                keypoints.append((x, y))
+                keypoints.append(cv2.KeyPoint(x, y, 1))
                 
     return  keypoints
 
 
 # Orientation Assignment
 def compute_orientation(image, keypoint, patch_size=31):
-    x, y = keypoint
+    x, y = keypoint.pt
     
     patch = image[y - patch_size//2:y + patch_size//2 + 1, x - patch_size//2:x + patch_size//2 + 1]
     
@@ -60,11 +61,18 @@ def compute_orientation(image, keypoint, patch_size=31):
     return dominant
 
 
+def all_orientations(image, keypoints):
+    for keypoint in keypoints:
+        orientation = compute_orientation(image, keypoint)
+        keypoint.angle = orientation
+
+
 # BRIEF descriptor
 def generate_brief_pattern(patch_size, num_pairs):
     np.random.seed(0)  # For reproducibility
     pattern = np.random.randint(0, patch_size, (num_pairs, 4))
     return pattern
+
 
 def compute_brief_descriptor(image, keypoint, pattern, patch_size):
     x, y = keypoint.pt
@@ -83,6 +91,7 @@ def compute_brief_descriptor(image, keypoint, pattern, patch_size):
     
     return np.array(descriptor, dtype=np.uint8)
 
+
 def brief_keypoint_descriptors(image, keypoints, patch_size=31, num_pairs=256):
     pattern = generate_brief_pattern(patch_size, num_pairs)
     descriptors = []
@@ -92,3 +101,18 @@ def brief_keypoint_descriptors(image, keypoints, patch_size=31, num_pairs=256):
         descriptors.append(descriptor)
     
     return np.array(descriptors)
+
+
+# Put all together as ORB
+def compute_orb(image):
+    """Compute keypoint of an image using ORB"""
+    # FAST Algorithm
+    keypoints = fast_algorithm(image)
+    
+    # Orientation Assignment
+    all_orientations(image, keypoints)
+    
+    # BRIEF descriptor 
+    descriptors = brief_keypoint_descriptors(image, keypoints)
+    
+    return keypoints, descriptors
