@@ -13,6 +13,15 @@ def get_images(dir) -> list:
             
     return images
 
+
+def convert_to_gray(image):
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+
+def convert_all_to_gray(images: list): 
+    return [convert_to_gray(image) for image in images]
+
+
 def stitch_images(images: list):
     return images[random.randint(0, len(images)-1)]
 
