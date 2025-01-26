@@ -1,16 +1,20 @@
 import cv2
 import numpy as np
 import os
+import random
 import sys
 
 
-def get_images(dir):
+def get_images(dir) -> list:
     images = []
     for f in os.listdir(dir):
         if f.endswith('jpg'):
             images.append(cv2.imread(os.path.join(dir, f)))
             
     return images
+
+def stitch_images(images: list):
+    return images[random.randint(0, len(images)-1)]
 
 
 if __name__ == '__main__':
@@ -32,7 +36,7 @@ if __name__ == '__main__':
     
     # check if images are found in the directory
     if images == []:
-        print('No images found in the directory')
+        print(f'No images found in the directory {dir_path}')
         sys.exit(1)
     
     
