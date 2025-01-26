@@ -1,6 +1,14 @@
 import cv2
 import numpy as np
 
+def non_maximum_suppression(keypoints, response, radius=3):
+    suppressed_keypoints = []
+    for keypoint in keypoints:
+        x, y = int(keypoint.pt[0]), int(keypoint.pt[1])
+        if response[y, x] == np.max(response[max(0, y-radius):min(response.shape[0], y+radius+1), max(0, x-radius):min(response.shape[1], x+radius+1)]):
+            suppressed_keypoints.append(keypoint)
+    return suppressed_keypoints
+
 # FAST algorithm (Features from Accelerated Segment Test)
 def is_keypoint(image, x, y, threshold=100):
     circle_offsets = [(-3, 0), (-3, 1), (-2, 2), (-1, 3), (0, 3), (1, 3), (2, 2), (3, 1),
@@ -29,12 +37,16 @@ def is_keypoint(image, x, y, threshold=100):
 
 def fast_algorithm(image, threshold=100):
     keypoints = []
+    response = np.zeros(image.shape, dtype=np.float32)
     
     for y in range(3, image.shape[0] - 3):
         for x in range(3, image.shape[1] - 3):
             if is_keypoint(image, x, y, threshold):
+                response[y, x] = image[y, x]
                 keypoints.append(cv2.KeyPoint(x, y, 1))
-                
+    
+    # Apply non-maximum suppression
+    keypoints = non_maximum_suppression(keypoints, response)
     return keypoints
 
 # Orientation Assignment
