@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+# FAST algorithm (Features from accelerated segment test)
 def is_keypoint(image, x, y, threshold=100):
     circle_offsets = [(-3, 0), (-3, 1), (-2, 2), (-1, 3), (0, 3), (1, 3), (2, 2), (3, 1),
                       (3, 0), (3, -1), (2, -2), (1, -3), (0, -3), (-1, -3), (-2, -2), (-3, -1)]
@@ -35,3 +36,25 @@ def fast_algorithm(image, threshold=100):
                 keypoints.append((x, y))
                 
     return  keypoints
+
+
+# Orientation Assignment
+def compute_orientation(image, keypoint, patch_size=31):
+    x, y = keypoint
+    
+    patch = image[y - patch_size//2:y + patch_size//2 + 1, x - patch_size//2:x + patch_size//2 + 1]
+    
+    # gradient computations
+    Ix = cv2.Sobel(patch, cv2.CV_64F, 1, 0, ksize=3)
+    Iy = cv2.Sobel(patch, cv2.CV_64F, 0, 1, ksize=3)
+    
+    # gradient magnitude and orientation
+    magnitude = np.sqrt(Ix ** 2 + Iy ** 2)
+    orientations = np.arctan2(Iy, Ix)
+    
+    #histogram
+    hist, bin_edges = np.histogram(orientations, bins=36, range=(-np.pi, np.pi), weights=magnitude)
+    
+    dominant = bin_edges[np.argmax(hist)]
+    
+    return dominant
