@@ -17,11 +17,11 @@ def is_keypoint(image, x, y, threshold=100):
         if offset_x < 0 or offset_x >= image.shape[1] or offset_y < 0 or offset_y >= image.shape[0]:
             continue
         
-        neighbor_intensity = image[offset_y, offset_x]
+        neighbour_intensity = image[offset_y, offset_x]
         
-        if neighbor_intensity > center_intensity + threshold:
+        if neighbour_intensity > center_intensity + threshold:
             brighter_count += 1
-        elif neighbor_intensity < center_intensity - threshold:
+        elif neighbour_intensity < center_intensity - threshold:
             darker_count += 1
             
     return brighter_count >= 12 or darker_count >= 12  
