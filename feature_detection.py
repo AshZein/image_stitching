@@ -35,6 +35,20 @@ def is_keypoint(image, x, y, threshold=100):
             
     return brighter_count >= 12 or darker_count >= 12  
 
+
+def filter_keypoints(keypoints, min_distance=10):
+    filtered_keypoints = []
+    for i, kp1 in enumerate(keypoints):
+        keep = True
+        for j, kp2 in enumerate(keypoints):
+            if i != j and cv2.norm(kp1.pt, kp2.pt) < min_distance:
+                keep = False
+                break
+        if keep:
+            filtered_keypoints.append(kp1)
+    return filtered_keypoints
+
+
 def fast_algorithm(image, threshold=100):
     keypoints = []
     response = np.zeros(image.shape, dtype=np.float32)
@@ -47,7 +61,10 @@ def fast_algorithm(image, threshold=100):
     
     # Apply non-maximum suppression
     keypoints = non_maximum_suppression(keypoints, response)
+    filter_keypoints(keypoints)
     return keypoints
+
+
 
 # Orientation Assignment
 def compute_orientation(image, keypoint, patch_size=31):
