@@ -4,6 +4,9 @@ import os
 import random
 import sys
 
+from feature_detection import compute_orb
+from feature_mapping import bruteforce_matcher
+
 
 def get_images(dir) -> list:
     images = []
@@ -24,6 +27,29 @@ def convert_all_to_gray(images: list):
 
 def stitch_images(images: list):
     return images[random.randint(0, len(images)-1)]
+
+
+def get_keypoints_and_descriptors(images):
+    keypoints = []
+    descriptors = []
+    for image in images:
+        k, d = compute_orb(image)
+        keypoints.append(k)
+        descriptors.append(d)
+        
+    return keypoints, descriptors
+
+
+def match_all_descriptors(descriptors):
+    """Match all possible pairs of descriptors"""
+    descriptor_matches = {}
+    for i in range(len(descriptors)):
+        for j in range(len(descriptors)):
+            if i != j:
+                matches = bruteforce_matcher(descriptors[i], descriptors[2])
+                descriptor_matches[(i, j)] = matches
+                
+    return descriptor_matches
 
 
 if __name__ == '__main__':
@@ -47,6 +73,8 @@ if __name__ == '__main__':
     if images == []:
         print(f'No images found in the directory {dir_path}')
         sys.exit(1)
+        
+    image_gray = convert_all_to_gray(images)
     
     
 
