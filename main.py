@@ -11,7 +11,7 @@ from feature_mapping import bruteforce_matcher
 def get_images(dir) -> list:
     images = []
     for f in os.listdir(dir):
-        if f.endswith('jpg'):
+        if f.endswith('jpg') or f.endswith('png'):
             images.append(cv2.imread(os.path.join(dir, f)))
             
     return images
@@ -46,7 +46,7 @@ def match_all_descriptors(descriptors):
     for i in range(len(descriptors)):
         for j in range(len(descriptors)):
             if i != j:
-                matches = bruteforce_matcher(descriptors[i], descriptors[2])
+                matches = bruteforce_matcher(descriptors[i], descriptors[j])
                 descriptor_matches[(i, j)] = matches
                 
     return descriptor_matches
@@ -89,6 +89,7 @@ if __name__ == '__main__':
     
     for (i,j), matches in descriptor_matches.items():
         good_matches = ratio_test(matches)
+        print(f'Good matches between image {i} and image {j}: {len(good_matches)}')
         
     
     
