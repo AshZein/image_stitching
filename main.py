@@ -52,6 +52,14 @@ def match_all_descriptors(descriptors):
     return descriptor_matches
 
 
+def ratio_test(matches, ratio=0.75):
+    good_matches = []
+    for m, n in matches:
+        if m.distance < ratio * n.distance:
+            good_matches.append(m)
+    return good_matches
+
+
 if __name__ == '__main__':
     # command: python3 main.py <path_to_images>
     
@@ -75,6 +83,13 @@ if __name__ == '__main__':
         sys.exit(1)
         
     image_gray = convert_all_to_gray(images)
+    
+    keypoints, descriptors = get_keypoints_and_descriptors(image_gray)
+    descriptor_matches = match_all_descriptors(descriptors)
+    
+    for (i,j), matches in descriptor_matches.items():
+        good_matches = ratio_test(matches)
+        
     
     
 
