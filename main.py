@@ -6,7 +6,7 @@ import sys
 
 from feature_detection import compute_orb
 from feature_mapping import bruteforce_matcher
-
+from stitch import *
 
 def get_images(dir) -> list:
     images = []
@@ -74,6 +74,8 @@ if __name__ == '__main__':
     if not os.path.isdir(dir_path):
         print(f'Error: {dir_path} is not a valid directory')
         sys.exit(1)
+        
+    print("\n" + str(os.listdir(dir_path)) + "\n\n\n")
     
     images = get_images(dir_path)
     
@@ -87,9 +89,16 @@ if __name__ == '__main__':
     keypoints, descriptors = get_keypoints_and_descriptors(image_gray)
     descriptor_matches = match_all_descriptors(descriptors)
     
-    for (i,j), matches in descriptor_matches.items():
+    for (i, j), matches in descriptor_matches.items():
         good_matches = ratio_test(matches)
-        print(f'Good matches between image {i} and image {j}: {len(good_matches)}')
+        if len(good_matches) > 10:  # Ensure there are enough good matches
+            H, mask = find_homography(keypoints[i], keypoints[j], good_matches)
+            warped_image = warp_images(images[i], images[j], H)
+            blended_image = blend_images(warped_image, images[j])
+            final_image = crop_image(blended_image)
+            cv2.imshow(f'Stitched Image {i}-{j}', final_image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
         
     
     
